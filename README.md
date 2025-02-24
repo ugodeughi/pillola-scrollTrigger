@@ -1,119 +1,104 @@
-# 📌 Ottimizzazione delle Performance con `useMemo`
+# 🖼️ Animazioni con GSAP ScrollTrigger in React
 
-## 🚀 Introduzione
+Questa pillola mostra come creare un effetto **fade-in e scale-in** quando un'immagine entra nella viewport e **fade-out e scale-out** quando esce, utilizzando **GSAP ScrollTrigger** in React.
 
-React ri-renderizza un componente ogni volta che il suo stato o le sue props cambiano. Se all'interno del componente c'è un **calcolo costoso**, questo viene rieseguito inutilmente ad ogni render, causando **rallentamenti**.
+## 📌 Tecnologie utilizzate
+- **React** (Hooks: `useRef`, `useEffect`)
+- **GSAP** (`gsap`, `ScrollTrigger`)
 
-👉 **Soluzione? `useMemo`!**
+## ✨ Funzionamento
+1. **Quando l'immagine entra nella viewport** (80% dall'alto) → appare con `opacity: 1` e si ingrandisce (`scale: 1`).
+2. **Quando l'immagine esce in alto** (2% della viewport) → inizia a scomparire.
+3. **Quando esce completamente (-50%)** → è completamente invisibile.
 
-✅ Evita calcoli ripetuti inutilmente.  
-✅ Memorizza il **risultato** di una funzione complessa.  
-✅ Migliora le performance evitando operazioni costose nei re-render.  
+## 📜 Codice React + GSAP
+```jsx
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
----
+gsap.registerPlugin(ScrollTrigger);
 
-## 📌 Installazione
+const images = ["/image1.jpg", "/image2.jpg", "/image3.jpg"];
 
-Se stai già usando React, `useMemo` è incluso di default. Assicurati di avere **React 16.8+**:
+export default function ScrollImages() {
+  const imageRefs = useRef([]);
 
-```bash
-npm install react
-# oppure
-yarn add react
-```
+  useEffect(() => {
+    imageRefs.current.forEach((img) => {
+      gsap.fromTo(
+        img,
+        { opacity: 0, scale: 0.8 },
+        {
+          opacity: 1,
+          scale: 1,
+          scrollTrigger: {
+            trigger: img,
+            start: "top 80%",
+            end: "top 20%",
+            scrub: true,
+          },
+        }
+      );
 
----
-
-## ❌ Problema: Senza `useMemo`
-
-Immaginiamo di avere un calcolo complesso (verifica se un numero è primo). Senza `useMemo`, il calcolo verrà rieseguito **ogni volta che il componente si aggiorna**, anche se non serve.
-
-```tsx
-import { useState } from "react";
-
-function isPrime(num) {
-  console.log("🔄 Calcolando se è primo...");
-  for (let i = 2; i < num; i++) {
-    if (num % i === 0) return false;
-  }
-  return num > 1;
-}
-
-export default function App() {
-  const [count, setCount] = useState(0);
-  const [number, setNumber] = useState(10);
-
-  const prime = isPrime(number); // ⚠️ Ricalcolato ad ogni render!
+      gsap.fromTo(
+        img,
+        { opacity: 1, scale: 1 },
+        {
+          opacity: 0,
+          scale: 0.8,
+          scrollTrigger: {
+            trigger: img,
+            start: "top 2%",
+            end: "top -50%",
+            scrub: true,
+          },
+        }
+      );
+    });
+  }, []);
 
   return (
-    <div>
-      <h2>{number} è primo? {prime ? "✅ Sì" : "❌ No"}</h2>
-      <button onClick={() => setCount(count + 1)}>Incrementa ({count})</button>
-      <button onClick={() => setNumber(number + 1)}>Cambia numero ({number})</button>
+    <div className="image-container">
+      {images.map((src, index) => (
+        <img
+          key={index}
+          src={src}
+          ref={(el) => (imageRefs.current[index] = el)}
+          className="scroll-image"
+          alt={`Scroll Image ${index + 1}`}
+        />
+      ))}
     </div>
   );
 }
 ```
 
-⚠️ **Problema**: Anche se premi "Incrementa" (che non modifica `number`), il calcolo viene rieseguito inutilmente.
-
----
-
-## ✅ Soluzione: `useMemo`
-
-Usando `useMemo`, React **memorizza il risultato** del calcolo e lo ricalcola solo **se il valore cambia**.
-
-```tsx
-import { useState, useMemo } from "react";
-
-function isPrime(num) {
-  console.log("🔄 Calcolando se è primo...");
-  for (let i = 2; i < num; i++) {
-    if (num % i === 0) return false;
-  }
-  return num > 1;
+## 🎨 CSS per lo stile
+```css
+.image-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 100px;
+  padding: 100px 0;
 }
 
-export default function App() {
-  const [count, setCount] = useState(0);
-  const [number, setNumber] = useState(10);
-
-  const prime = useMemo(() => isPrime(number), [number]); // ✅ Memoizzato!
-
-  return (
-    <div>
-      <h2>{number} è primo? {prime ? "✅ Sì" : "❌ No"}</h2>
-      <button onClick={() => setCount(count + 1)}>Incrementa ({count})</button>
-      <button onClick={() => setNumber(number + 1)}>Cambia numero ({number})</button>
-    </div>
-  );
+.scroll-image {
+  width: 50vw;
+  opacity: 0;
 }
 ```
 
-🎯 **Vantaggi**:  
-✅ `isPrime()` viene ricalcolato **solo quando `number` cambia**.  
-✅ Se premi "Incrementa", il calcolo **non viene rieseguito**.  
-✅ **Performance migliorata** per operazioni costose.  
+## 🔹 Spiegazione
+- `useRef()` raccoglie i riferimenti agli `<img>`.
+- `useEffect()` attiva le animazioni GSAP dopo il render.
+- `ScrollTrigger` controlla quando avviare il **fade-in e fade-out**.
+- `scrub: true` rende l'animazione fluida sincronizzandola con lo scroll.
 
----
+## 🚀 Prova a personalizzare!
+- **Vuoi animare solo alcune immagini?** Usa una classe CSS specifica e filtra con `document.querySelectorAll(".animate")`.
+- **Vuoi un fade-out più lento?** Cambia `end: "top -30%"`.
+- **Vuoi aggiungere più immagini?** Basta aggiungerle all'array `images`.
 
-## 🔥 Quando usare `useMemo`?
-
-| Scenario | Usare `useMemo`? |
-|---|---|
-| Il calcolo è **semplice e veloce** | ❌ No |
-| Il calcolo è **pesante (es. array filtering, sorting, operazioni matematiche complesse)** | ✅ Sì |
-| Il valore calcolato **non cambia spesso** | ✅ Sì |
-| Usi il valore in un **componente figlio** per evitare re-render | ✅ Sì |
-
-⚠️ **Attenzione!** Non abusare di `useMemo` su operazioni semplici, altrimenti rischi di **complicare il codice senza reali benefici**.
-
----
-
-## 📌 Conclusione
-
-React è potente, ma ottimizzare le performance è essenziale nelle app più grandi. `useMemo` ti aiuta a **migliorare la velocità**, evitando calcoli inutili.  
-
-🚀 **Ti è stato utile? Hai mai usato `useMemo`?** Scrivilo nei commenti!  
-
-📌 #React #Performance #useMemo #PilloleDiWebDev #UgoDeUghi
+🔹 **Ora puoi creare effetti di scroll reveal in React con GSAP!** 🎉
