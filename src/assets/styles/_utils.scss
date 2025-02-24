@@ -1,0 +1,72 @@
+@use 'vars' as *;
+
+.violet {
+  color: $violet;
+}
+
+.yellow {
+  color: $yellow;
+}
+
+.blue {
+  color: $blue;
+}
+
+.green {
+  color: $green;
+}
+
+.red {
+  color: $red;
+}
+
+.orange {
+  color: $orange;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.normal {
+  font-weight: 400;
+}
+
+.semibold {
+  font-weight: 500;
+}
+
+.fs {
+  &-small {
+    font-size: 0.8rem;
+  }
+
+  &-medium {
+    font-size: 1.2rem;
+  }
+
+  &-large {
+    font-size: 1.6rem;
+  }
+
+  &-xlarge {
+    font-size: 2.4rem;
+  }
+
+  &-ultrasmall {
+    font-size: 0.6rem;
+  }
+}
+
+.vertical-middle {
+  vertical-align: middle;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.sc-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
